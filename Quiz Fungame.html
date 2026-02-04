@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fun Quiz Game</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f8ff;
+    margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
+  }
+  .quiz-container {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    padding: 2rem;
+  }
+  h1 {
+    text-align: center;
+    color: #007acc;
+  }
+  #question {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  .answers {
+    list-style: none;
+    padding: 0;
+  }
+  .answers li {
+    margin-bottom: 0.75rem;
+  }
+  .answer-btn {
+    width: 100%;
+    background-color: #e1ecf7;
+    border: 2px solid #007acc;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .answer-btn:hover, .answer-btn.selected {
+    background-color: #007acc;
+    color: white;
+  }
+  #submit-btn {
+    margin-top: 1.5rem;
+    width: 100%;
+    background-color: #007acc;
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    padding: 0.7rem;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #submit-btn:disabled {
+    background-color: #5a9ddb99;
+    cursor: not-allowed;
+  }
+  #result {
+    margin-top: 1.5rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    color: #007acc;
+  }
+</style>
+</head>
+<body>
+  <div class="quiz-container">
+    <h1>Fun Quiz Game</h1>
+    <div id="question-container">
+      <div id="question">Question Text</div>
+      <ul class="answers" id="answer-buttons">
+        <!-- Answer buttons go here dynamically -->
+      </ul>
+      <button id="submit-btn" disabled>Submit Answer</button>
+      <div id="result"></div>
+    </div>
+  </div>
+
+<script>
+  const quizData = [
+    {
+      question: "Which language runs in a web browser?",
+      answers: [
+        { text: "Java", correct: false },
+        { text: "C", correct: false },
+        { text: "Python", correct: false },
+        { text: "JavaScript", correct: true }
+      ]
+    },
+    {
+      question: "What does CSS stand for?",
+      answers: [
+        { text: "Creative Style Sheets", correct: false },
+        { text: "Cascading Style Sheets", correct: true },
+        { text: "Computer Style Sheets", correct: false },
+        { text: "Colorful Style Sheets", correct: false }
+      ]
+    },
+    {
+      question: "What does HTML stand for?",
+      answers: [
+        { text: "Hypertext Markup Language", correct: true },
+        { text: "Hypertext Markdown Language", correct: false },
+        { text: "Hyperloop Machine Language", correct: false },
+        { text: "Helicopters Terminals Motorboats Lamborginis", correct: false }
+      ]
+    },
+    {
+      question: "Which company developed React?",
+      answers: [
+        { text: "Google", correct: false },
+        { text: "Facebook", correct: true },
+        { text: "Microsoft", correct: false },
+        { text: "Twitter", correct: false }
+      ]
+    },
+    {
+      question: "Which symbol is used for comments in JavaScript?",
+      answers: [
+        { text: "//", correct: true },
+        { text: "/* */", correct: true },
+        { text: "#", correct: false },
+        { text: "<!-- -->", correct: false }
+      ]
+    }
+  ];
+
+  const questionEl = document.getElementById('question');
+  const answerButtonsEl = document.getElementById('answer-buttons');
+  const submitBtn = document.getElementById('submit-btn');
+  const resultEl = document.getElementById('result');
+
+  let currentQuestionIndex = 0;
+  let score = 0;
+  let selectedAnswer = null;
+
+  function startQuiz() {
+    currentQuestionIndex = 0;
+    score = 0;
+    resultEl.innerText = '';
+    showQuestion();
+    submitBtn.innerText = 'Submit Answer';
+    submitBtn.disabled = true;
+  }
+
+  function showQuestion() {
+    resetState();
+    const currentQuestion = quizData[currentQuestionIndex];
+    questionEl.innerText = currentQuestion.question;
+
+    currentQuestion.answers.forEach((answer, index) => {
+      const button = document.createElement('button');
+      button.innerText = answer.text;
+      button.classList.add('answer-btn');
+      button.addEventListener('click', () => selectAnswer(button, answer.correct));
+      answerButtonsEl.appendChild(button);
+    });
+  }
+
+  function resetState() {
+    selectedAnswer = null;
+    submitBtn.disabled = true;
+    while (answerButtonsEl.firstChild) {
+      answerButtonsEl.removeChild(answerButtonsEl.firstChild);
+    }
+    resultEl.innerText = '';
+  }
+
+  function selectAnswer(button, isCorrect) {
+    const buttons = answerButtonsEl.querySelectorAll('button');
+    buttons.forEach(btn => {
+      btn.classList.remove('selected');
+      btn.disabled = false;
+    });
+    button.classList.add('selected');
+    selectedAnswer = {button, isCorrect};
+    submitBtn.disabled = false;
+  }
+
+  submitBtn.addEventListener('click', () => {
+    if (!selectedAnswer) return;
+
+    // Disable all buttons after submission
+    const buttons = answerButtonsEl.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+
+    if (selectedAnswer.isCorrect) {
+      score++;
+      selectedAnswer.button.style.backgroundColor = '#4CAF50'; // green
+      resultEl.innerText = "Correct!";
+      resultEl.style.color = '#4CAF50';
+    } else {
+      selectedAnswer.button.style.backgroundColor = '#f44336'; // red
+      resultEl.innerText = "Wrong!";
+      resultEl.style.color = '#f44336';
+
+      // Highlight the correct answer(s)
+      buttons.forEach((btn, i) => {
+        if(quizData[currentQuestionIndex].answers[i].correct) {
+          btn.style.backgroundColor = '#4CAF50';
+        }
+      });
+    }
+
+    submitBtn.disabled = true;
+
+    setTimeout(() => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < quizData.length) {
+        showQuestion();
+      } else {
+        showScore();
+      }
+    }, 1500);
+  });
+
+  function showScore() {
+    resetState();
+    questionEl.innerText = `You scored ${score} out of ${quizData.length}!`;
+    submitBtn.innerText = "Restart Quiz";
+    submitBtn.disabled = false;
+    submitBtn.onclick = () => {
+      startQuiz();
+      submitBtn.onclick = null; // restore default listener
+    };
+  }
+
+  startQuiz();
+</script>
+</body>
+</html>
